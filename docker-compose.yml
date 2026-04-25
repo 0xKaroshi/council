@@ -1,0 +1,29 @@
+# council — optional Docker deployment of the MCP server.
+#
+# The CLI does not need this. For pip-installed local usage, see
+# INSTALL.md. This compose file is for users who want to expose
+# their council over MCP through their own reverse proxy.
+#
+# Bring up:    docker compose up -d --build
+# Tail logs:   docker compose logs -f
+# Run CLI:     docker compose exec council council list-mentors
+
+services:
+  council:
+    image: council:latest
+    build: .
+    container_name: council
+    env_file:
+      - .env
+    restart: unless-stopped
+    volumes:
+      # Editable mentor archives + per-post HTML cache.
+      - ./data:/srv/data
+      # User-editable mentor lineup (read-only inside the container).
+      - ./config:/srv/config:ro
+      # User-editable context markdown (read-only inside the container).
+      - ./user_context:/srv/user_context:ro
+    ports:
+      # Expose only on localhost by default; production users should
+      # remove this and route via their own reverse proxy / TLS layer.
+      - "127.0.0.1:8440:8440"

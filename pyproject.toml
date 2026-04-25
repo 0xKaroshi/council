@@ -1,0 +1,87 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "council"
+version = "0.1.0"
+description = "Build your own private council from public archives. Hybrid retrieval over per-mentor SQLite, queryable from CLI or MCP."
+readme = "README.md"
+license = { text = "Apache-2.0" }
+requires-python = ">=3.10"
+keywords = [
+    "rag",
+    "retrieval-augmented-generation",
+    "mcp",
+    "knowledge-base",
+    "embeddings",
+    "sqlite-vec",
+    "fastmcp",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries",
+]
+dependencies = [
+    "click>=8.1,<9",
+    "PyYAML>=6,<7",
+    "fastapi>=0.135,<0.140",
+    "uvicorn[standard]>=0.44,<0.50",
+    "mcp>=1.27,<2",
+    "pydantic>=2.13,<3",
+    "pydantic-settings>=2.13,<3",
+    "python-multipart>=0.0.20,<0.1",
+    "python-dotenv>=1.2,<2",
+    "tiktoken>=0.12,<1",
+    "httpx[http2]>=0.28,<1",
+    "openai>=2.30,<3",
+    "sqlite-vec>=0.1.9,<0.2",
+    "trafilatura>=2.0,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8,<10",
+    "pytest-asyncio>=0.24,<2",
+    "ruff>=0.6,<1",
+]
+
+[project.urls]
+Homepage = "https://github.com/council-brain/council"
+Issues = "https://github.com/council-brain/council/issues"
+
+[project.scripts]
+council = "app.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["app*", "scripts*", "examples*", "config", "user_context"]
+
+# Bundle the example mentor archives, the default mentor config, and
+# the user_context templates into the wheel so `pipx install council`
+# ships them alongside the code. Without this, the bundled assets
+# would only work for editable installs (`pip install -e .`) where
+# the repo root is reachable via __file__ traversal.
+[tool.setuptools.package-data]
+"examples.paulgraham" = ["*.db"]
+"examples.naval" = ["*.db"]
+"examples.patrick_oshag" = ["*.db"]
+"config" = ["*.yaml"]
+"user_context" = ["*.example.md", "README.md"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "strict"
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B"]
+ignore = ["E501"]

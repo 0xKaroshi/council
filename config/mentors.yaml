@@ -1,0 +1,44 @@
+# council — mentor lineup. See CONFIGURING_MENTORS.md for the full
+# schema, source types, and how to add new mentors.
+#
+# Each entry needs at minimum a slug + display_name. Sources are
+# optional but a mentor with no sources is just a name in the
+# config; ingest will skip it.
+
+mentors:
+  - slug: paulgraham
+    display_name: Paul Graham
+    domain_focus: "startup essays, hacker culture, taste, founder advice"
+    sources:
+      # Aaron Swartz's RSS for paulgraham.com still tracks new essays
+      # (PG's site is static HTML with no native feed).
+      - type: blog
+        domain: paulgraham.com
+        rss_url: http://www.aaronsw.com/2002/feeds/pgessays.rss
+    source_priority:
+      blog: 3
+      twitter: 1
+
+  - slug: naval
+    display_name: Naval Ravikant
+    domain_focus: "frameworks for wealth, leverage, judgment, philosophy"
+    sources:
+      - type: blog
+        domain: nav.al
+      - type: twitter
+        handle: naval
+    source_priority:
+      blog: 3
+      twitter: 1
+
+  - slug: patrick_oshag
+    display_name: Patrick O'Shaughnessy
+    domain_focus: "operator interviews, capital allocation, business strategy"
+    sources:
+      - type: blog
+        domain: joincolossus.com
+      - type: twitter
+        handle: patrick_oshag
+    source_priority:
+      blog: 3
+      twitter: 1

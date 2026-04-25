@@ -1,0 +1,40 @@
+# Local secrets — never commit
+.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+.venv/
+venv/
+build/
+dist/
+
+# Tooling
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+.coverage
+
+# OS
+.DS_Store
+
+# Runtime data — your own ingested mentor archives stay local.
+# The repo ships with bundled example data under examples/ which IS
+# committed (small, useful for verification).
+data/
+!data/.gitkeep
+
+# User-context files are personal. Templates (`*.example.md`) are
+# committed; filled-in copies (`*.md`) are not.
+user_context/*.md
+!user_context/*.example.md
+!user_context/README.md
+
+# Per-mentor blog cache (regenerable from network)
+data/cache/
+
+# IDE
+.idea/
+.vscode/
