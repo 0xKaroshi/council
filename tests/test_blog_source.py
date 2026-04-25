@@ -19,7 +19,6 @@ from app.ingest.sources.blog import (
     _parse_sitemap,
 )
 
-
 _RSS_FIXTURE = """<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
@@ -227,9 +226,10 @@ async def test_second_fetch_hits_cache_and_skips_network(tmp_path: Path) -> None
       <item><link>https://example.test/posts/p2/</link>
             <pubDate>Tue, 13 Feb 2024 08:00:00 +0000</pubDate></item>
     </channel></rss>"""
-    html_for = lambda u: _post_html(
-        f"Post at {u}", ["Body paragraph for the test."]
-    )
+    def html_for(u):
+        return _post_html(
+            f"Post at {u}", ["Body paragraph for the test."]
+        )
     post_fetch_count = {"n": 0}
 
     def handler(request: httpx.Request) -> httpx.Response:

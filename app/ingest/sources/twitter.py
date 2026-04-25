@@ -34,7 +34,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Any, AsyncIterator, Awaitable, Callable
@@ -152,7 +152,7 @@ class TwitterSource(Source):
             except TwitterBudgetExceeded as exc:
                 pending_raise = exc
 
-            for cid, tweets in threads.items():
+            for _cid, tweets in threads.items():
                 item = self._thread_to_raw_item(tweets)
                 if item is None:
                     continue

@@ -20,7 +20,6 @@ from app.embeddings.providers import (
 )
 from app.embeddings.store import get_missing_chunks, upsert_embeddings
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

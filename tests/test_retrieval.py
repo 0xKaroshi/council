@@ -25,7 +25,6 @@ import pytest
 from app.retrieval.bm25 import _sanitize_fts5_query
 from app.retrieval.fusion import rrf_fuse
 
-
 # ---------------------------------------------------------------------------
 # Test 1 — BM25 sanitization
 # ---------------------------------------------------------------------------
@@ -121,7 +120,7 @@ async def test_recency_bias_applies_correct_multiplier(tmp_path: Path, monkeypat
     Expected multipliers are computed from the real date arithmetic
     (not hand-counted) so a calendar mistake can't land as a test
     assertion mistake."""
-    from datetime import datetime, timezone
+    from datetime import datetime
 
     from app.config import settings
     from app.embeddings.store import upsert_embeddings

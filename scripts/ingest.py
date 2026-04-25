@@ -19,8 +19,12 @@ import asyncio
 import logging
 import sys
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 
 from app.ingest.mentors import MENTORS, MentorConfig
+
+if TYPE_CHECKING:
+    from app.ingest.sources.twitter import TwitterSourceStats
 
 _SOURCE_TYPES = ("twitter", "substack", "newsletter", "blog", "youtube", "all")
 _DEFAULT_SINCE = "2023-01-01"
@@ -205,7 +209,6 @@ async def _run_twitter(mentor: MentorConfig, args: argparse.Namespace) -> int:
         BatchInfo,
         TwitterBudgetExceeded,
         TwitterSource,
-        TwitterSourceStats,
     )
 
     enc = tiktoken.get_encoding("cl100k_base")

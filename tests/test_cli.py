@@ -38,7 +38,7 @@ def test_init_scaffolds_into_clean_directory(tmp_path, runner, monkeypatch):
     monkeypatch.chdir(tmp_path)
     from app.cli import cli
 
-    result = runner.invoke(cli, ["init"])
+    runner.invoke(cli, ["init"])
     # Exit code may be 0 even if running outside the bundled package
     # path; what we assert is that init created the expected dirs.
     assert (tmp_path / "config").is_dir()
@@ -180,6 +180,7 @@ def test_search_reads_from_bundled_examples_when_user_db_missing(
     # Use the search tool directly (CLI runner + asyncio.run interop is
     # awkward; the CLI delegates to this same function).
     import asyncio
+
     from app.tools.search import search
 
     out = asyncio.run(search(mentor_slug="paulgraham", question="startup", k=3))

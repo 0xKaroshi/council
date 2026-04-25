@@ -77,7 +77,7 @@ def chunk_tweets(items: Iterable[RawItem], mentor_slug: str) -> list[Chunk]:
         by_thread.setdefault(cid, []).append(item)
 
     chunks: list[Chunk] = []
-    for cid, thread in by_thread.items():
+    for _cid, thread in by_thread.items():
         thread.sort(key=lambda r: r.date)
         text = "\n\n".join(t.body.strip() for t in thread if t.body.strip())
         if not text:

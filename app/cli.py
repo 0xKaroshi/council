@@ -23,12 +23,10 @@ import logging
 import shutil
 import sys
 import textwrap
-from datetime import datetime, timezone
 from pathlib import Path
 
 import click
 
-from app.config import settings
 from app.ingest.mentors import MentorConfig, load_mentors
 
 log = logging.getLogger("council.cli")
@@ -147,7 +145,8 @@ def init(force: bool) -> None:
     # fallback in app.ingest.db means reads against an empty user
     # data dir transparently use the bundled archives.  Just create
     # the directory so first-ingest doesn't have to mkdir.
-    Path("./data/mentors").mkdir(parents=True, exist_ok=True)
+    data_mentors = Path("./data/mentors")
+    data_mentors.mkdir(parents=True, exist_ok=True)
     seeded = 0
     if seeded:
         _info(
@@ -205,7 +204,7 @@ def status() -> None:
     from app.ingest.db import open_mentor_db, resolve_mentor_db_path
 
     rows: list[tuple[str, int, int, str, str, str]] = []
-    for slug, cfg in mentors.items():
+    for slug, _cfg in mentors.items():
         path, source = resolve_mentor_db_path(slug, fallback_to_bundled=True)
         if source == "missing":
             rows.append((slug, 0, 0, "—", "—", "missing"))

@@ -59,7 +59,7 @@ async def _run(mentor: MentorConfig, args: argparse.Namespace) -> int:
     import tiktoken
 
     from app.config import settings
-    from app.embeddings.providers import OpenAIEmbedder, _COST_PER_1M_TOKENS
+    from app.embeddings.providers import _COST_PER_1M_TOKENS, OpenAIEmbedder
     from app.embeddings.store import get_missing_chunks, upsert_embeddings
     from app.ingest.db import open_mentor_db
 
@@ -119,7 +119,7 @@ async def _run(mentor: MentorConfig, args: argparse.Namespace) -> int:
             ids = [cid for cid, _ in slice_]
             texts = [txt for _, txt in slice_]
             result = await embedder.embed(texts)
-            upsert_embeddings(db, list(zip(ids, result.vectors)))
+            upsert_embeddings(db, list(zip(ids, result.vectors, strict=False)))
             embedded += len(ids)
     finally:
         await embedder.aclose()
