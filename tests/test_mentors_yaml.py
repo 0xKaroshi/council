@@ -3,6 +3,7 @@
 The loader is the seam every other module reaches through to find
 the mentor lineup. Bad YAML, missing slug fields, or a missing
 config file all need predictable behavior."""
+
 from __future__ import annotations
 
 from pathlib import Path
@@ -110,6 +111,7 @@ def test_mentors_proxy_returns_empty_when_config_missing(monkeypatch, tmp_path: 
     import importlib
 
     import app.ingest.mentors as mentors_mod
+
     importlib.reload(mentors_mod)
     monkeypatch.setattr(mentors_mod, "_bundled_config_path", lambda: None)
 

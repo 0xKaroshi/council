@@ -11,6 +11,7 @@ their rank order in each list matters. The output is a single fused
 list `[(chunk_id, combined_score)]` sorted descending by combined
 score.
 """
+
 from __future__ import annotations
 
 _DEFAULT_K_RRF = 60

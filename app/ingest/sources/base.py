@@ -12,6 +12,7 @@ a blog base URL vs. a YouTube channel ID), so subclasses define their
 own `__init__`. The ingest CLI is the only call site, and it knows
 how to wire each source's specific arguments.
 """
+
 from __future__ import annotations
 
 from abc import ABC, abstractmethod

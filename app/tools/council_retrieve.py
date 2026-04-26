@@ -22,6 +22,7 @@ tool's description guides the LLM to pick that surface for
 single-mentor questions; council_retrieve is for genuinely multi-
 lens questions only.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -74,9 +75,7 @@ _MSG_NO_MENTORS = (
     "Council unavailable: no mentors are configured. "
     "Run `council init` to scaffold config/mentors.yaml."
 )
-_MSG_ALL_UNAVAILABLE = (
-    "Council unavailable: every configured mentor archive failed to respond."
-)
+_MSG_ALL_UNAVAILABLE = "Council unavailable: every configured mentor archive failed to respond."
 
 
 def _label_prefix(slug: str) -> str:
@@ -170,9 +169,7 @@ async def council_retrieve(
         return _MSG_ALL_UNAVAILABLE
 
     survivor_names = [
-        c.display_name
-        for c in ordered
-        if not isinstance(by_slug[c.slug][0], BaseException)
+        c.display_name for c in ordered if not isinstance(by_slug[c.slug][0], BaseException)
     ]
 
     lines: list[str] = [f'Council retrieved snippets for: "{question}"', ""]
@@ -187,9 +184,7 @@ async def council_retrieve(
                 cfg.slug,
                 exc_info=(type(payload), payload, payload.__traceback__),
             )
-            others_clause = (
-                " + ".join(survivor_names) if survivor_names else "no other mentors"
-            )
+            others_clause = " + ".join(survivor_names) if survivor_names else "no other mentors"
             lines.append(
                 f"{cfg.display_name}'s archive is currently unavailable. "
                 f"Council proceeds with {others_clause} only."

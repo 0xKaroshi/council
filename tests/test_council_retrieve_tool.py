@@ -13,6 +13,7 @@ plant a 3-mentor YAML in tmp_path, then exercise the orchestration:
      unavailable notice names survivors, no exception escapes).
   5. All-fail returns the canonical "Council unavailable" message.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -122,18 +123,16 @@ async def test_council_runs_retrievals_in_parallel(monkeypatch, three_mentor_con
     monkeypatch.setattr("app.tools.council_retrieve.retrieve", slow_retrieve)
 
     from app.tools.council_retrieve import council_retrieve
+
     t0 = time.perf_counter()
     await council_retrieve(question="multi-lens question")
     elapsed = time.perf_counter() - t0
 
     assert len(start_times) == 3
     spread_ms = (max(start_times) - min(start_times)) * 1000
-    assert spread_ms < 50, (
-        f"retrieve() calls did not start in parallel: spread={spread_ms:.1f}ms"
-    )
+    assert spread_ms < 50, f"retrieve() calls did not start in parallel: spread={spread_ms:.1f}ms"
     assert elapsed < PER_CALL_SLEEP * 1.6, (
-        f"council total {elapsed:.3f}s suggests serialization "
-        f"(expected near {PER_CALL_SLEEP:.3f}s)"
+        f"council total {elapsed:.3f}s suggests serialization (expected near {PER_CALL_SLEEP:.3f}s)"
     )
 
 
@@ -147,32 +146,56 @@ async def test_council_formats_three_sections_with_labeled_snippets(
     fakes = {
         "alpha": [
             Snippet(
-                chunk_id=10, mentor_slug="alpha", text="Alpha take one.",
+                chunk_id=10,
+                mentor_slug="alpha",
+                text="Alpha take one.",
                 source_url="https://alpha.example.test/1",
-                source_type="twitter", date="2025-01-01",
-                score=0.04, bm25_rank=1, vec_rank=1, source_priority=1,
+                source_type="twitter",
+                date="2025-01-01",
+                score=0.04,
+                bm25_rank=1,
+                vec_rank=1,
+                source_priority=1,
             ),
         ],
         "beta": [
             Snippet(
-                chunk_id=20, mentor_slug="beta", text="Beta take one.",
+                chunk_id=20,
+                mentor_slug="beta",
+                text="Beta take one.",
                 source_url="https://beta.example.test/1",
-                source_type="blog_post", date="2025-02-01",
-                score=0.05, bm25_rank=1, vec_rank=1, source_priority=3,
+                source_type="blog_post",
+                date="2025-02-01",
+                score=0.05,
+                bm25_rank=1,
+                vec_rank=1,
+                source_priority=3,
             ),
             Snippet(
-                chunk_id=21, mentor_slug="beta", text="Beta take two.",
+                chunk_id=21,
+                mentor_slug="beta",
+                text="Beta take two.",
                 source_url="https://beta.example.test/2",
-                source_type="blog_post", date="2025-02-02",
-                score=0.04, bm25_rank=2, vec_rank=None, source_priority=3,
+                source_type="blog_post",
+                date="2025-02-02",
+                score=0.04,
+                bm25_rank=2,
+                vec_rank=None,
+                source_priority=3,
             ),
         ],
         "gamma": [
             Snippet(
-                chunk_id=30, mentor_slug="gamma", text="Gamma take one.",
+                chunk_id=30,
+                mentor_slug="gamma",
+                text="Gamma take one.",
                 source_url="https://gamma.example.test/1",
-                source_type="podcast", date="2025-03-01",
-                score=0.03, bm25_rank=None, vec_rank=1, source_priority=2,
+                source_type="podcast",
+                date="2025-03-01",
+                score=0.03,
+                bm25_rank=None,
+                vec_rank=1,
+                source_priority=2,
             ),
         ],
     }
@@ -206,25 +229,35 @@ async def test_council_formats_three_sections_with_labeled_snippets(
 
 
 @pytest.mark.asyncio
-async def test_council_isolates_single_mentor_failure(
-    monkeypatch, three_mentor_config, caplog
-):
+async def test_council_isolates_single_mentor_failure(monkeypatch, three_mentor_config, caplog):
     """beta raises; alpha + gamma still render; unavailable notice
     names survivors; tool returns a string, never raises."""
     from app.retrieval import Snippet
     from app.tools.council_retrieve import council_retrieve
 
     alpha_snip = Snippet(
-        chunk_id=1, mentor_slug="alpha", text="Alpha take",
+        chunk_id=1,
+        mentor_slug="alpha",
+        text="Alpha take",
         source_url="https://alpha.example.test/1",
-        source_type="twitter", date="2025-01-01", score=0.05,
-        bm25_rank=1, vec_rank=1, source_priority=1,
+        source_type="twitter",
+        date="2025-01-01",
+        score=0.05,
+        bm25_rank=1,
+        vec_rank=1,
+        source_priority=1,
     )
     gamma_snip = Snippet(
-        chunk_id=2, mentor_slug="gamma", text="Gamma take",
+        chunk_id=2,
+        mentor_slug="gamma",
+        text="Gamma take",
         source_url="https://gamma.example.test/1",
-        source_type="twitter", date="2025-02-01", score=0.04,
-        bm25_rank=1, vec_rank=1, source_priority=1,
+        source_type="twitter",
+        date="2025-02-01",
+        score=0.04,
+        bm25_rank=1,
+        vec_rank=1,
+        source_priority=1,
     )
 
     async def maybe_failing(**kwargs):
@@ -252,17 +285,15 @@ async def test_council_isolates_single_mentor_failure(
     assert "[beta_1]" not in out
 
     matching = [
-        r for r in caplog.records
-        if r.exc_info is not None
-        and "beta.db missing" in str(r.exc_info[1])
+        r
+        for r in caplog.records
+        if r.exc_info is not None and "beta.db missing" in str(r.exc_info[1])
     ]
     assert matching
 
 
 @pytest.mark.asyncio
-async def test_council_all_fail_returns_canonical_message(
-    monkeypatch, three_mentor_config
-):
+async def test_council_all_fail_returns_canonical_message(monkeypatch, three_mentor_config):
     from app.tools.council_retrieve import council_retrieve
 
     async def boom(**_):
@@ -271,6 +302,4 @@ async def test_council_all_fail_returns_canonical_message(
     monkeypatch.setattr("app.tools.council_retrieve.retrieve", boom)
 
     out = await council_retrieve(question="anything")
-    assert out == (
-        "Council unavailable: every configured mentor archive failed to respond."
-    )
+    assert out == ("Council unavailable: every configured mentor archive failed to respond.")

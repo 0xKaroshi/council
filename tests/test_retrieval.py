@@ -14,6 +14,7 @@ Strategy:
 No real network. The mentor registry already has "testmentor", which is
 the slug used by both the production code and the integration test.
 """
+
 from __future__ import annotations
 
 import random
@@ -28,6 +29,7 @@ from app.retrieval.fusion import rrf_fuse
 # ---------------------------------------------------------------------------
 # Test 1 — BM25 sanitization
 # ---------------------------------------------------------------------------
+
 
 def test_bm25_sanitize_strips_dangerous_chars_and_handles_empty() -> None:
     """Operators, quotes, and structural FTS5 chars must be neutralized
@@ -63,6 +65,7 @@ def test_bm25_sanitize_strips_dangerous_chars_and_handles_empty() -> None:
 # Test 2 — RRF fusion (math + dedup, parameterized)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.parametrize(
     "case_name, bm25, vec, expected_first, expected_present",
     [
@@ -73,7 +76,7 @@ def test_bm25_sanitize_strips_dangerous_chars_and_handles_empty() -> None:
             "distinct_top_ranks_tie",
             [(1, -10.0), (2, -8.0), (3, -7.0)],
             [(100, 0.1), (200, 0.2), (300, 0.3)],
-            1,                 # 1 inserted into scores dict first
+            1,  # 1 inserted into scores dict first
             {1, 2, 3, 100, 200, 300},
         ),
         # Overlapping doc shows up in both lists → should beat anything
@@ -111,6 +114,7 @@ def test_rrf_fuse_math_and_dedup(case_name, bm25, vec, expected_first, expected_
 # ---------------------------------------------------------------------------
 # Test 3 — recency bias
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_recency_bias_applies_correct_multiplier(tmp_path: Path, monkeypatch) -> None:
@@ -172,6 +176,7 @@ async def test_recency_bias_applies_correct_multiplier(tmp_path: Path, monkeypat
 # ---------------------------------------------------------------------------
 # Test 4 — end-to-end retrieve()
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_retrieve_end_to_end_with_mocked_embedding(tmp_path: Path, monkeypatch) -> None:
@@ -247,10 +252,9 @@ async def test_retrieve_end_to_end_with_mocked_embedding(tmp_path: Path, monkeyp
 # Test 5 — source_priority boost lifts canonical chunks (Phase 5 Step 1)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
-async def test_source_priority_boost_lifts_canonical_chunks(
-    tmp_path: Path, monkeypatch
-) -> None:
+async def test_source_priority_boost_lifts_canonical_chunks(tmp_path: Path, monkeypatch) -> None:
     """Build a tiny mentor DB with two chunks at differing
     source_priority. With boost=False, the higher fused score wins.
     With boost=True, a canonical (priority 3) chunk gets multiplied
@@ -268,10 +272,16 @@ async def test_source_priority_boost_lifts_canonical_chunks(
         "INSERT INTO chunks(id, source_url, source_type, date, text, "
         "content_hash, source_priority) VALUES (?, ?, ?, ?, ?, ?, ?)",
         [
-            (1, "https://x.com/a/1", "twitter", "2024-04-01",
-             "pricing is positioning", "ph1", 1),
-            (2, "https://blog.example/p", "blog_post", "2024-04-02",
-             "pricing positioning lever", "ph2", 3),
+            (1, "https://x.com/a/1", "twitter", "2024-04-01", "pricing is positioning", "ph1", 1),
+            (
+                2,
+                "https://blog.example/p",
+                "blog_post",
+                "2024-04-02",
+                "pricing positioning lever",
+                "ph2",
+                3,
+            ),
         ],
     )
     rng = random.Random(42)
@@ -291,7 +301,9 @@ async def test_source_priority_boost_lifts_canonical_chunks(
     from app.retrieval import retrieve
 
     no_boost = await retrieve(
-        mentor_slug="testmentor", query="pricing positioning", k=2,
+        mentor_slug="testmentor",
+        query="pricing positioning",
+        k=2,
     )
     assert no_boost[0].chunk_id == 1
     score_no_boost_2 = next(s for s in no_boost if s.chunk_id == 2).score
@@ -300,7 +312,9 @@ async def test_source_priority_boost_lifts_canonical_chunks(
     # may or may not flip to #1 depending on the raw score gap, but
     # its absolute score must rise by exactly the multiplier.
     boosted = await retrieve(
-        mentor_slug="testmentor", query="pricing positioning", k=2,
+        mentor_slug="testmentor",
+        query="pricing positioning",
+        k=2,
         source_priority_boost=True,
     )
     boosted_2 = next(s for s in boosted if s.chunk_id == 2)
@@ -318,6 +332,7 @@ async def test_source_priority_boost_lifts_canonical_chunks(
 # ---------------------------------------------------------------------------
 # Test 6 — query_embedding override skips the embed call (Phase 6)
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_retrieve_uses_provided_embedding_skips_embed_call(
@@ -352,9 +367,11 @@ async def test_retrieve_uses_provided_embedding_skips_embed_call(
     # Sentinel mock: if retrieve() ever calls embed_query, the test
     # fails immediately — we want strict proof that the override
     # branch skips the network call.
-    embed_mock = AsyncMock(side_effect=AssertionError(
-        "embed_query was called even though query_embedding was provided"
-    ))
+    embed_mock = AsyncMock(
+        side_effect=AssertionError(
+            "embed_query was called even though query_embedding was provided"
+        )
+    )
     monkeypatch.setattr("app.retrieval.query.embed_query", embed_mock)
 
     from app.retrieval import retrieve
@@ -363,7 +380,7 @@ async def test_retrieve_uses_provided_embedding_skips_embed_call(
         mentor_slug="testmentor",
         query="beta topic",
         k=3,
-        query_embedding=vectors[1],   # → vector search will favor chunk 2
+        query_embedding=vectors[1],  # → vector search will favor chunk 2
     )
 
     embed_mock.assert_not_awaited()

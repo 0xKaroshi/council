@@ -16,6 +16,7 @@ Commands:
     council convene "question"         Fan a question out to every mentor
     council status                     Per-mentor corpus snapshot
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -38,6 +39,7 @@ def _bundled_dir(name: str) -> Path | None:
     walk-up-from-this-file path used by editable installs."""
     try:
         from importlib.resources import files
+
         try:
             traversable = files(name)
             real_path = Path(str(traversable))
@@ -88,6 +90,7 @@ def _safe_load_mentors() -> dict[str, MentorConfig]:
 # Group
 # ---------------------------------------------------------------------------
 
+
 @click.group(help="council — multi-mentor knowledge base CLI")
 @click.option("-v", "--verbose", is_flag=True, help="Enable DEBUG logging.")
 @click.pass_context
@@ -99,6 +102,7 @@ def cli(ctx: click.Context, verbose: bool) -> None:
 # ---------------------------------------------------------------------------
 # init
 # ---------------------------------------------------------------------------
+
 
 @cli.command(help="Scaffold ./config/mentors.yaml and ./user_context/ from templates.")
 @click.option("--force", is_flag=True, help="Overwrite existing files.")
@@ -139,7 +143,9 @@ def init(force: bool) -> None:
     elif _TEMPLATES_DIR.resolve() == ctx_dir.resolve():
         _info(f"  · {ctx_dir} is the bundled templates dir (running in-repo)")
     else:
-        _info("  ! no built-in user_context templates found; you can create your own .md files in ./user_context/")
+        _info(
+            "  ! no built-in user_context templates found; you can create your own .md files in ./user_context/"
+        )
 
     # No longer seed data/mentors/ from examples — the bundled-DB
     # fallback in app.ingest.db means reads against an empty user
@@ -170,6 +176,7 @@ def init(force: bool) -> None:
 # list-mentors
 # ---------------------------------------------------------------------------
 
+
 @cli.command("list-mentors", help="Show every mentor in the YAML config.")
 def list_mentors_cmd() -> None:
     mentors = _safe_load_mentors()
@@ -194,6 +201,7 @@ def list_mentors_cmd() -> None:
 # ---------------------------------------------------------------------------
 # status
 # ---------------------------------------------------------------------------
+
 
 @cli.command(help="Per-mentor corpus snapshot (chunks, embedded, date range, source).")
 def status() -> None:
@@ -222,25 +230,19 @@ def status() -> None:
             mn, mx = r[0] or "—", r[1] or "—"
         finally:
             db.close()
-        rows.append(
-            (slug, int(chunks), int(embedded), str(mn)[:10], str(mx)[:10], source)
-        )
+        rows.append((slug, int(chunks), int(embedded), str(mn)[:10], str(mx)[:10], source))
 
-    _info(
-        f"{'mentor':18s} {'chunks':>7s} {'embedded':>9s}  "
-        f"{'date range':23s} {'source':>10s}"
-    )
+    _info(f"{'mentor':18s} {'chunks':>7s} {'embedded':>9s}  {'date range':23s} {'source':>10s}")
     _info("-" * 74)
     for slug, ch, em, mn, mx, source in rows:
         date_range = f"{mn} → {mx}"
-        _info(
-            f"{slug:18s} {ch:>7d} {em:>9d}  {date_range:23s} {f'({source})':>10s}"
-        )
+        _info(f"{slug:18s} {ch:>7d} {em:>9d}  {date_range:23s} {f'({source})':>10s}")
 
 
 # ---------------------------------------------------------------------------
 # ingest
 # ---------------------------------------------------------------------------
+
 
 @cli.command(help="Backfill one mentor's archive (or all with --all).")
 @click.argument("slug", required=False)
@@ -255,7 +257,9 @@ def status() -> None:
 @click.option("--max-tweets", type=int, default=20000, show_default=True)
 @click.option("--max-cost-usd", type=float, default=None, help="Optional cost cap per Twitter run.")
 @click.option("--max-posts", type=int, default=500, show_default=True)
-@click.option("--since", default="2024-01-01", show_default=True, help="ISO date floor for Twitter.")
+@click.option(
+    "--since", default="2024-01-01", show_default=True, help="ISO date floor for Twitter."
+)
 @click.option("--restart", is_flag=True, help="Ignore stored cursor; start fresh.")
 @click.option("--dry-run", is_flag=True, help="Fetch + chunk but do not write to the mentor DB.")
 def ingest(
@@ -325,6 +329,7 @@ def _resolve_sources(cfg: MentorConfig, requested: str) -> list[str]:
 # embed
 # ---------------------------------------------------------------------------
 
+
 @cli.command(help="Embed pending chunks (idempotent — only new chunks are sent to OpenAI).")
 @click.argument("slug", required=False)
 @click.option("--all", "all_", is_flag=True, help="Embed every configured mentor.")
@@ -360,6 +365,7 @@ def embed(slug: str | None, all_: bool, limit: int | None, dry_run: bool) -> Non
 # ask
 # ---------------------------------------------------------------------------
 
+
 @cli.command(help="Query one mentor's archive and print the retrieved snippets.")
 @click.argument("slug")
 @click.argument("question", nargs=-1, required=True)
@@ -383,6 +389,7 @@ def ask(slug: str, question: tuple[str, ...], k: int, recency_bias: bool) -> Non
 # ---------------------------------------------------------------------------
 # convene
 # ---------------------------------------------------------------------------
+
 
 @cli.command(help="Fan a question out to every configured mentor in parallel.")
 @click.argument("question", nargs=-1, required=True)

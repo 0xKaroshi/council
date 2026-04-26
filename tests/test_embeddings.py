@@ -6,6 +6,7 @@ store tests use an in-memory SQLite with sqlite-vec loaded — fast
 (~milliseconds per test) and exercises the real vec0 virtual-table
 path without hitting disk or the network.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -23,6 +24,7 @@ from app.embeddings.store import get_missing_chunks, upsert_embeddings
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _fake_embeddings_response(n_vectors: int, tokens: int) -> MagicMock:
     """Shape-match openai.types.CreateEmbeddingResponse: .data is a list
@@ -58,9 +60,7 @@ def _in_memory_db() -> sqlite3.Connection:
         );
         """
     )
-    conn.execute(
-        "CREATE VIRTUAL TABLE chunks_vec USING vec0(embedding float[1536])"
-    )
+    conn.execute("CREATE VIRTUAL TABLE chunks_vec USING vec0(embedding float[1536])")
     return conn
 
 
@@ -75,6 +75,7 @@ def _seed_chunks(conn: sqlite3.Connection, rows: list[tuple[int, str, str]]) -> 
 # ---------------------------------------------------------------------------
 # Tests
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_embedder_returns_1536_dim_vectors() -> None:
@@ -114,9 +115,7 @@ def test_upsert_embeddings_and_get_missing_chunks_round_trip() -> None:
 
     assert {cid for cid, _ in get_missing_chunks(conn)} == {1, 2}
 
-    inserted = upsert_embeddings(
-        conn, [(1, [0.1] * 1536), (2, [0.2] * 1536)]
-    )
+    inserted = upsert_embeddings(conn, [(1, [0.1] * 1536), (2, [0.2] * 1536)])
     assert inserted == 2
 
     count = conn.execute("SELECT COUNT(*) FROM chunks_vec").fetchone()[0]

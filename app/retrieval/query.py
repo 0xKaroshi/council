@@ -10,6 +10,7 @@ same exponential-backoff retry behavior as bulk ingest, at zero
 duplicated code. The embedder is created/closed per call — query
 volume is low enough that the connection overhead is negligible.
 """
+
 from __future__ import annotations
 
 import re
@@ -29,9 +30,7 @@ async def embed_query(text: str) -> list[float]:
     from app.embeddings.providers import OpenAIEmbedder
 
     if not settings.openai_api_key:
-        raise RuntimeError(
-            "OPENAI_API_KEY is not set; cannot embed query for retrieval."
-        )
+        raise RuntimeError("OPENAI_API_KEY is not set; cannot embed query for retrieval.")
 
     embedder = OpenAIEmbedder(
         api_key=settings.openai_api_key,

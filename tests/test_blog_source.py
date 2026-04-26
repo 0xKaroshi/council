@@ -3,6 +3,7 @@
 No real network. The blog source's `http_client` is injected so
 tests pass an `httpx.AsyncClient` backed by `httpx.MockTransport`.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -53,6 +54,7 @@ _SITEMAP_FIXTURE = """<?xml version="1.0" encoding="UTF-8"?>
   </url>
 </urlset>"""
 
+
 # Minimal HTML that trafilatura can extract a title + body from.
 def _post_html(title: str, body_paragraphs: list[str], h2: str | None = None) -> str:
     paras = "\n".join(f"<p>{p}</p>" for p in body_paragraphs)
@@ -72,6 +74,7 @@ def _post_html(title: str, body_paragraphs: list[str], h2: str | None = None) ->
 # ---------------------------------------------------------------------------
 # Test 1 — RSS parser extracts URL + date pairs
 # ---------------------------------------------------------------------------
+
 
 def test_rss_parser_extracts_links_and_dates() -> None:
     """Pure parser test — no network. Both pubDate-style and missing-
@@ -102,6 +105,7 @@ def test_rss_parser_extracts_links_and_dates() -> None:
 # ---------------------------------------------------------------------------
 # Test 2 — trafilatura extraction yields title + paragraph blocks
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_extraction_produces_title_and_blocks(tmp_path: Path) -> None:
@@ -165,6 +169,7 @@ async def test_extraction_produces_title_and_blocks(tmp_path: Path) -> None:
 # Test 3 — paragraph chunker prepends "{title} > {h2}: " and respects target
 # ---------------------------------------------------------------------------
 
+
 def test_chunk_blog_paragraphs_prefixes_and_segments() -> None:
     """Hand-build a RawItem with metadata['blocks']: 1 H2 followed by
     several long paragraphs. With a tiny target_tokens the chunker
@@ -172,7 +177,7 @@ def test_chunk_blog_paragraphs_prefixes_and_segments() -> None:
     "{title} > {h2}: " prefix and respects paragraph boundaries (no
     chunk text begins mid-sentence)."""
     paragraphs = [
-        "Pricing is positioning. " * 30,    # ~120 tokens
+        "Pricing is positioning. " * 30,  # ~120 tokens
         "Retention is the only metric that matters at scale. " * 30,
         "ICP work is what survives the next platform shift. " * 30,
         "Test the offer before building the product. " * 30,
@@ -189,9 +194,7 @@ def test_chunk_blog_paragraphs_prefixes_and_segments() -> None:
         metadata={"blocks": blocks, "domain": "example.test"},
     )
 
-    chunks = chunk_blog_paragraphs(
-        item, "testmentor", target_tokens=300, overlap_tokens=50
-    )
+    chunks = chunk_blog_paragraphs(item, "testmentor", target_tokens=300, overlap_tokens=50)
 
     # >1 chunk because the body exceeds target_tokens.
     assert len(chunks) >= 2
@@ -202,7 +205,7 @@ def test_chunk_blog_paragraphs_prefixes_and_segments() -> None:
         assert c.text.startswith("Test Title > Operator economics: ")
         # The substring after the prefix must begin at the start of
         # one of the paragraphs (paragraph-boundary respect).
-        body = c.text[len("Test Title > Operator economics: "):]
+        body = c.text[len("Test Title > Operator economics: ") :]
         assert any(body.startswith(p[:30]) for p in paragraphs), (
             f"chunk does not begin at a paragraph boundary: {body[:60]!r}"
         )
@@ -215,6 +218,7 @@ def test_chunk_blog_paragraphs_prefixes_and_segments() -> None:
 # Test 4 — cache hits avoid the network on the second fetch
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_second_fetch_hits_cache_and_skips_network(tmp_path: Path) -> None:
     """First run discovers + fetches; second run with the same
@@ -226,10 +230,10 @@ async def test_second_fetch_hits_cache_and_skips_network(tmp_path: Path) -> None
       <item><link>https://example.test/posts/p2/</link>
             <pubDate>Tue, 13 Feb 2024 08:00:00 +0000</pubDate></item>
     </channel></rss>"""
+
     def html_for(u):
-        return _post_html(
-            f"Post at {u}", ["Body paragraph for the test."]
-        )
+        return _post_html(f"Post at {u}", ["Body paragraph for the test."])
+
     post_fetch_count = {"n": 0}
 
     def handler(request: httpx.Request) -> httpx.Response:
@@ -283,6 +287,7 @@ async def test_second_fetch_hits_cache_and_skips_network(tmp_path: Path) -> None
 # Test 5 — content_hash dedup across two domains hosting the same essay
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_substack_sparse_rss_unions_with_sitemap(tmp_path: Path) -> None:
     """Substack /feed truncates to ~20 most recent posts but
@@ -306,8 +311,7 @@ async def test_substack_sparse_rss_unions_with_sitemap(tmp_path: Path) -> None:
     # 5 URLs that overlap with the RSS feed + 45 unique ones.
     for i in range(5):
         sitemap_urls.append(
-            f"<url><loc>https://sub.test/p/feed-only-{i}/</loc>"
-            f"<lastmod>2024-04-01</lastmod></url>"
+            f"<url><loc>https://sub.test/p/feed-only-{i}/</loc><lastmod>2024-04-01</lastmod></url>"
         )
     for i in range(45):
         sitemap_urls.append(
@@ -328,12 +332,14 @@ async def test_substack_sparse_rss_unions_with_sitemap(tmp_path: Path) -> None:
         fetched_paths.append(path)
         if path in ("/feed", "/feed/"):
             return httpx.Response(
-                200, text=rss,
+                200,
+                text=rss,
                 headers={"content-type": "application/xml"},
             )
         if path == "/sitemap.xml":
             return httpx.Response(
-                200, text=sitemap,
+                200,
+                text=sitemap,
                 headers={"content-type": "application/xml"},
             )
         # Per-post fetches stub out — we only care about discovery here.
@@ -419,12 +425,14 @@ async def test_substack_post_extraction_from_fixture(tmp_path: Path) -> None:
         path = request.url.path
         if path in ("/feed", "/feed/", "/index.xml"):
             return httpx.Response(
-                200, text=rss,
+                200,
+                text=rss,
                 headers={"content-type": "application/xml"},
             )
         if path == "/p/build-once-sell-twice/":
             return httpx.Response(
-                200, text=html,
+                200,
+                text=html,
                 headers={"content-type": "text/html"},
             )
         return httpx.Response(404)
@@ -450,10 +458,7 @@ async def test_substack_post_extraction_from_fixture(tmp_path: Path) -> None:
     assert item.date.startswith("2024-08-15")
 
     # Body paragraphs extracted; subscribe widget did NOT leak in.
-    paragraphs = [
-        b["text"] for b in item.metadata["blocks"]
-        if b["type"] == "paragraph"
-    ]
+    paragraphs = [b["text"] for b in item.metadata["blocks"] if b["type"] == "paragraph"]
     assert len(paragraphs) >= 2
     body = " ".join(paragraphs)
     assert "leverage" in body.lower()

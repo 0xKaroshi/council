@@ -4,6 +4,7 @@ Loads from a `.env` file (via pydantic-settings) and environment
 variables. All settings have sensible defaults so the local CLI
 works on a fresh checkout once the user supplies an OpenAI key.
 """
+
 from pathlib import Path
 from typing import Annotated
 

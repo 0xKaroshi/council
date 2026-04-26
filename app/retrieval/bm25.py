@@ -15,6 +15,7 @@ internal quotes by doubling) and joined with `OR`. This:
 BM25's IDF weighting naturally downweights common words like "how" /
 "should" / "the" so the OR-joined query still ranks correctly.
 """
+
 from __future__ import annotations
 
 import re

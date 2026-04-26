@@ -5,6 +5,7 @@ Per-command behavior is exercised by the targeted tool tests
 (test_search_tool, test_council_retrieve_tool, etc.). This file
 just guards against the kind of regression where a typo in
 @cli.command breaks the entire CLI surface."""
+
 from __future__ import annotations
 
 import pytest
@@ -18,6 +19,7 @@ def runner():
 
 def test_root_help_lists_every_command(runner):
     from app.cli import cli
+
     result = runner.invoke(cli, ["--help"])
     assert result.exit_code == 0
     for cmd in ("init", "list-mentors", "ingest", "embed", "ask", "convene", "status"):
@@ -26,6 +28,7 @@ def test_root_help_lists_every_command(runner):
 
 def test_each_subcommand_has_help(runner):
     from app.cli import cli
+
     for cmd in ("init", "list-mentors", "ingest", "embed", "ask", "convene", "status"):
         result = runner.invoke(cli, [cmd, "--help"])
         assert result.exit_code == 0, f"--help failed for {cmd}: {result.output}"
@@ -60,10 +63,12 @@ def test_list_mentors_friendly_error_when_no_config(tmp_path, runner, monkeypatc
     import importlib
 
     import app.ingest.mentors as m
+
     importlib.reload(m)
     monkeypatch.setattr(m, "_bundled_config_path", lambda: None)
 
     from app.cli import cli
+
     result = runner.invoke(cli, ["list-mentors"])
     assert result.exit_code == 2
     assert "not found" in result.output or "not found" in (result.stderr_bytes or b"").decode()
@@ -73,18 +78,18 @@ def test_list_mentors_friendly_error_when_no_config(tmp_path, runner, monkeypatc
 # Bundled-fallback tests (repo MUST contain examples/<slug>/<slug>.db files)
 # ---------------------------------------------------------------------------
 
+
 def _bundled_slugs_present() -> list[str]:
     """Return slugs that have a bundled DB findable via the same
     resolver the CLI uses. Empty when running from a checkout without
     examples/ (e.g. CI without LFS or a stripped wheel)."""
     from app.ingest.db import _bundled_db_path
+
     candidates = ["paulgraham", "naval", "patrick_oshag"]
     return [s for s in candidates if _bundled_db_path(s) is not None]
 
 
-def test_status_falls_back_to_bundled_examples_when_data_dir_empty(
-    tmp_path, runner, monkeypatch
-):
+def test_status_falls_back_to_bundled_examples_when_data_dir_empty(tmp_path, runner, monkeypatch):
     """Point COUNCIL_DATA_DIR at an empty tmp_path. The bundled DBs
     should appear in `council status` with the (bundled) source tag —
     proving a freshly-installed council works without ingestion."""
@@ -102,8 +107,7 @@ def test_status_falls_back_to_bundled_examples_when_data_dir_empty(
     cfg_path.write_text(
         "mentors:\n"
         + "".join(
-            f"  - slug: {s}\n    display_name: {s.title()}\n    sources: []\n"
-            for s in bundled
+            f"  - slug: {s}\n    display_name: {s.title()}\n    sources: []\n" for s in bundled
         )
     )
     monkeypatch.setenv("COUNCIL_CONFIG", str(cfg_path))
@@ -113,11 +117,14 @@ def test_status_falls_back_to_bundled_examples_when_data_dir_empty(
 
     import app.config as cfg_mod
     import app.ingest.mentors as m
+
     importlib.reload(cfg_mod)
     importlib.reload(m)
     import app.ingest.db as db_mod
+
     importlib.reload(db_mod)
     import app.cli as cli_mod
+
     importlib.reload(cli_mod)
 
     result = runner.invoke(cli_mod.cli, ["status"])
@@ -131,14 +138,10 @@ def test_status_falls_back_to_bundled_examples_when_data_dir_empty(
 
     # User data dir should still be empty (status must NEVER write to it
     # just to read).
-    assert not (empty_data / "mentors").exists() or not list(
-        (empty_data / "mentors").glob("*.db")
-    )
+    assert not (empty_data / "mentors").exists() or not list((empty_data / "mentors").glob("*.db"))
 
 
-def test_search_reads_from_bundled_examples_when_user_db_missing(
-    tmp_path, runner, monkeypatch
-):
+def test_search_reads_from_bundled_examples_when_user_db_missing(tmp_path, runner, monkeypatch):
     """A clean COUNCIL_DATA_DIR + a bundled paulgraham DB → `council ask
     paulgraham "..."` returns a non-empty snippet block. We mock the
     OpenAI embed call so the test stays offline; the BM25 branch alone
@@ -153,16 +156,14 @@ def test_search_reads_from_bundled_examples_when_user_db_missing(
 
     cfg_path = tmp_path / "mentors.yaml"
     cfg_path.write_text(
-        "mentors:\n"
-        "  - slug: paulgraham\n"
-        "    display_name: Paul Graham\n"
-        "    sources: []\n"
+        "mentors:\n  - slug: paulgraham\n    display_name: Paul Graham\n    sources: []\n"
     )
     monkeypatch.setenv("COUNCIL_CONFIG", str(cfg_path))
 
     # Mock the OpenAI embed — we don't need real vectors for BM25 to
     # find matches, and the test must be runnable offline.
     from unittest.mock import AsyncMock
+
     monkeypatch.setattr(
         "app.retrieval.query.embed_query",
         AsyncMock(return_value=[0.0] * 1536),
@@ -172,9 +173,11 @@ def test_search_reads_from_bundled_examples_when_user_db_missing(
 
     import app.config as cfg_mod
     import app.ingest.mentors as m
+
     importlib.reload(cfg_mod)
     importlib.reload(m)
     import app.ingest.db as db_mod
+
     importlib.reload(db_mod)
 
     # Use the search tool directly (CLI runner + asyncio.run interop is
@@ -194,6 +197,4 @@ def test_search_reads_from_bundled_examples_when_user_db_missing(
     assert "Found " in out and " relevant snippets" in out
 
     # User data dir untouched.
-    assert not (empty_data / "mentors").exists() or not list(
-        (empty_data / "mentors").glob("*.db")
-    )
+    assert not (empty_data / "mentors").exists() or not list((empty_data / "mentors").glob("*.db"))

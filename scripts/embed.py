@@ -7,6 +7,7 @@ Resume-safe: re-running picks up exactly the chunks that don't yet
 have a vector in `chunks_vec`. `--dry-run` stops after estimating
 cost + missing-chunk count so you can sanity-check before spending.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -87,8 +88,7 @@ async def _run(mentor: MentorConfig, args: argparse.Namespace) -> int:
 
     if args.dry_run:
         print(
-            f"\ndry-run: would embed {len(missing)} chunks "
-            f"for ~${est_cost:.4f} — no API call made."
+            f"\ndry-run: would embed {len(missing)} chunks for ~${est_cost:.4f} — no API call made."
         )
         db.close()
         return 0
@@ -100,8 +100,7 @@ async def _run(mentor: MentorConfig, args: argparse.Namespace) -> int:
 
     if not settings.openai_api_key:
         print(
-            "OPENAI_API_KEY is not set; populate .env before running "
-            "without --dry-run.",
+            "OPENAI_API_KEY is not set; populate .env before running without --dry-run.",
             file=sys.stderr,
         )
         db.close()

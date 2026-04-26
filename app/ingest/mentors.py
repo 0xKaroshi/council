@@ -26,6 +26,7 @@ Schema (one entry per mentor):
 Re-load happens on every `load_mentors()` call so the YAML can be
 edited live without restarting the CLI / server.
 """
+
 from __future__ import annotations
 
 import logging
@@ -58,16 +59,18 @@ _DEFAULT_PRIORITIES: dict[str, int] = {
 @dataclass(frozen=True)
 class SourceConfig:
     """One ingestion source for one mentor."""
-    type: str                 # "twitter" | "blog" | "substack" | "newsletter" | "youtube"
-    handle: str | None = None # twitter handle (no @)
-    domain: str | None = None # blog / substack / newsletter domain
+
+    type: str  # "twitter" | "blog" | "substack" | "newsletter" | "youtube"
+    handle: str | None = None  # twitter handle (no @)
+    domain: str | None = None  # blog / substack / newsletter domain
     rss_url: str | None = None  # explicit RSS override (skips discovery cascade)
-    url: str | None = None      # canonical URL (e.g. youtube channel, podcast feed)
+    url: str | None = None  # canonical URL (e.g. youtube channel, podcast feed)
 
 
 @dataclass(frozen=True)
 class MentorConfig:
     """One mentor's full configuration."""
+
     slug: str
     display_name: str
     domain_focus: str = ""
@@ -102,6 +105,7 @@ class MentorConfig:
 # Loading
 # ---------------------------------------------------------------------------
 
+
 def _config_path() -> Path:
     """Resolve the active config path. `COUNCIL_CONFIG` env wins; falls
     back to ./config/mentors.yaml relative to the current working dir."""
@@ -122,6 +126,7 @@ def _bundled_config_path() -> Path | None:
     """
     try:
         from importlib.resources import files
+
         try:
             traversable = files("config").joinpath("mentors.yaml")
             if traversable.is_file():
@@ -157,9 +162,7 @@ def _parse_one(entry: dict) -> MentorConfig:
     if "slug" not in entry:
         raise ValueError(f"mentor entry missing 'slug': {entry!r}")
     if "display_name" not in entry:
-        raise ValueError(
-            f"mentor entry {entry['slug']!r} missing 'display_name'"
-        )
+        raise ValueError(f"mentor entry {entry['slug']!r} missing 'display_name'")
     sources_raw = entry.get("sources") or []
     sources = tuple(
         SourceConfig(

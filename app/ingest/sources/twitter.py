@@ -30,6 +30,7 @@ chunker.chunk_tweets(): we already have to buffer tweets to build
 `raw_tweets` / `thread_length` / aggregated engagement counts, so
 emitting a pre-joined body is essentially free from here.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -55,9 +56,9 @@ _DEFAULT_REQUEST_DELAY_SECONDS = 0.1
 @dataclass
 class TwitterSourceStats:
     api_calls: int = 0
-    tweets_fetched: int = 0          # everything the API returned (we paid for it)
-    replies_dropped: int = 0         # filtered out as chatter (reply to non-self)
-    tweets_kept: int = 0             # passed reply filter AND since filter
+    tweets_fetched: int = 0  # everything the API returned (we paid for it)
+    replies_dropped: int = 0  # filtered out as chatter (reply to non-self)
+    tweets_kept: int = 0  # passed reply filter AND since filter
     threads_emitted: int = 0
     last_cursor: str | None = None
 
@@ -207,10 +208,15 @@ class TwitterSource(Source):
                 last_exc = e
                 if attempt >= self.max_retries:
                     raise
-                delay = min(30.0, 2 ** attempt)
+                delay = min(30.0, 2**attempt)
                 log.warning(
                     "twitter: HTTP error on %s %s: %s (retry %d/%d in %.1fs)",
-                    method, url, e, attempt + 1, self.max_retries, delay,
+                    method,
+                    url,
+                    e,
+                    attempt + 1,
+                    self.max_retries,
+                    delay,
                 )
                 await asyncio.sleep(delay)
                 continue
@@ -219,10 +225,15 @@ class TwitterSource(Source):
                 if attempt >= self.max_retries:
                     resp.raise_for_status()
                 retry_after = _parse_retry_after(resp.headers.get("retry-after"))
-                delay = retry_after if retry_after > 0 else min(30.0, 2 ** attempt)
+                delay = retry_after if retry_after > 0 else min(30.0, 2**attempt)
                 log.warning(
                     "twitter: status %d on %s %s (retry %d/%d in %.1fs)",
-                    resp.status_code, method, url, attempt + 1, self.max_retries, delay,
+                    resp.status_code,
+                    method,
+                    url,
+                    attempt + 1,
+                    self.max_retries,
+                    delay,
                 )
                 await asyncio.sleep(delay)
                 continue
@@ -315,11 +326,7 @@ class TwitterSource(Source):
             batch_replies_dropped = 0
             for tw in raw_tweets:
                 reply_uid = tw.get("inReplyToUserId")
-                if (
-                    reply_uid is not None
-                    and self_uid is not None
-                    and str(reply_uid) != self_uid
-                ):
+                if reply_uid is not None and self_uid is not None and str(reply_uid) != self_uid:
                     batch_replies_dropped += 1
                     continue
                 filtered_tweets.append(tw)
@@ -338,8 +345,7 @@ class TwitterSource(Source):
             self.stats.replies_dropped += batch_replies_dropped
             self.stats.tweets_kept += len(kept)
             log.info(
-                "twitter: batch fetched=%d kept=%d cumulative=%d "
-                "oldest=%s est_cost=$%.4f",
+                "twitter: batch fetched=%d kept=%d cumulative=%d oldest=%s est_cost=$%.4f",
                 len(raw_tweets),
                 len(kept),
                 self.stats.tweets_fetched,
@@ -376,18 +382,12 @@ class TwitterSource(Source):
                 await asyncio.sleep(self.request_delay_seconds)
 
     def _enforce_caps(self) -> None:
-        if (
-            self.max_tweets is not None
-            and self.stats.tweets_fetched >= self.max_tweets
-        ):
+        if self.max_tweets is not None and self.stats.tweets_fetched >= self.max_tweets:
             raise TwitterBudgetExceeded(
                 f"max_tweets cap ({self.max_tweets}) reached at "
                 f"tweets_fetched={self.stats.tweets_fetched}"
             )
-        if (
-            self.max_cost_usd is not None
-            and self.stats.estimated_cost_usd >= self.max_cost_usd
-        ):
+        if self.max_cost_usd is not None and self.stats.estimated_cost_usd >= self.max_cost_usd:
             raise TwitterBudgetExceeded(
                 f"max_cost_usd cap (${self.max_cost_usd:.2f}) reached at "
                 f"est_cost=${self.stats.estimated_cost_usd:.4f}"
@@ -418,9 +418,7 @@ class TwitterSource(Source):
             return None
 
         body = "\n\n".join(
-            (tw.get("text") or "").strip()
-            for tw in ordered
-            if (tw.get("text") or "").strip()
+            (tw.get("text") or "").strip() for tw in ordered if (tw.get("text") or "").strip()
         )
         if not body:
             return None
@@ -454,6 +452,7 @@ class TwitterSource(Source):
 # ---------------------------------------------------------------------------
 # Helpers (module-level so tests can exercise them directly)
 # ---------------------------------------------------------------------------
+
 
 def _parse_tweet_date(s: str | None) -> datetime | None:
     """Accept Twitter's legacy "Mon Jan 01 00:00:00 +0000 2024" format

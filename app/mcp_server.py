@@ -5,6 +5,7 @@ get_user_context) with descriptions generated from the live mentor
 config so adding a mentor to YAML automatically updates the LLM-
 facing tool descriptions on next server restart.
 """
+
 from __future__ import annotations
 
 from mcp.server.fastmcp import FastMCP
@@ -56,12 +57,14 @@ def _transport_security() -> TransportSecuritySettings:
     origins: list[str] = []
     for h in settings.allowed_hosts:
         hosts.extend([h, f"{h}:*"])
-        origins.extend([
-            f"https://{h}",
-            f"http://{h}",
-            f"https://{h}:*",
-            f"http://{h}:*",
-        ])
+        origins.extend(
+            [
+                f"https://{h}",
+                f"http://{h}",
+                f"https://{h}:*",
+                f"http://{h}:*",
+            ]
+        )
     return TransportSecuritySettings(
         enable_dns_rebinding_protection=True,
         allowed_hosts=hosts,
@@ -92,6 +95,4 @@ mcp._mcp_server.version = "0.1.0"
 mcp.tool(name=PING_NAME, description=PING_DESCRIPTION)(ping)
 mcp.tool(name=SEARCH_NAME, description=search_description())(search)
 mcp.tool(name=COUNCIL_RETRIEVE_NAME, description=council_description())(council_retrieve)
-mcp.tool(
-    name=GET_USER_CONTEXT_NAME, description=GET_USER_CONTEXT_DESCRIPTION
-)(get_user_context)
+mcp.tool(name=GET_USER_CONTEXT_NAME, description=GET_USER_CONTEXT_DESCRIPTION)(get_user_context)

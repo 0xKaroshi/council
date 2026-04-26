@@ -29,6 +29,7 @@ Per-post fetch:
 Budget caps mirror Twitter's pattern: max_posts (default 500) and
 max_cost_usd (default off — bandwidth-bound, not API-bound).
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -68,11 +69,11 @@ class BlogSource(Source):
     source_type = "blog"
 
     _DISCOVERY_PATHS = (
-        "/index.xml",          # Hugo / static-site RSS
-        "/feed",               # Substack RSS (no trailing slash)
-        "/feed/",              # WordPress RSS (with trailing slash)
-        "/rss.xml",            # generic
-        "/sitemap.xml",        # WordPress (sitemap-index) + Substack (flat urlset)
+        "/index.xml",  # Hugo / static-site RSS
+        "/feed",  # Substack RSS (no trailing slash)
+        "/feed/",  # WordPress RSS (with trailing slash)
+        "/rss.xml",  # generic
+        "/sitemap.xml",  # WordPress (sitemap-index) + Substack (flat urlset)
         "/sitemap_index.xml",  # WordPress alternate
     )
 
@@ -233,8 +234,7 @@ class BlogSource(Source):
             return list(seen.items())
 
         log.error(
-            "blog: no working RSS / sitemap discovery endpoint at %s; "
-            "tried %s",
+            "blog: no working RSS / sitemap discovery endpoint at %s; tried %s",
             self.base_url,
             ", ".join(self._DISCOVERY_PATHS),
         )
@@ -283,9 +283,7 @@ class BlogSource(Source):
     # Per-post fetch + cache
     # ------------------------------------------------------------------
 
-    async def _fetch_with_cache(
-        self, client: httpx.AsyncClient, url: str
-    ) -> str | None:
+    async def _fetch_with_cache(self, client: httpx.AsyncClient, url: str) -> str | None:
         cache_path = self._cache_path_for(url)
         if not self.refresh and cache_path.exists():
             self.stats.cache_hits += 1
@@ -337,18 +335,12 @@ class BlogSource(Source):
         return client, True
 
     def _enforce_caps(self) -> None:
-        if (
-            self.max_posts is not None
-            and self.stats.posts_emitted >= self.max_posts
-        ):
+        if self.max_posts is not None and self.stats.posts_emitted >= self.max_posts:
             raise BlogBudgetExceeded(
                 f"max_posts cap ({self.max_posts}) reached at "
                 f"posts_emitted={self.stats.posts_emitted}"
             )
-        if (
-            self.max_cost_usd is not None
-            and self.stats.estimated_cost_usd >= self.max_cost_usd
-        ):
+        if self.max_cost_usd is not None and self.stats.estimated_cost_usd >= self.max_cost_usd:
             raise BlogBudgetExceeded(
                 f"max_cost_usd cap (${self.max_cost_usd:.2f}) reached "
                 f"at est_cost=${self.stats.estimated_cost_usd:.4f}"
@@ -358,6 +350,7 @@ class BlogSource(Source):
 # ---------------------------------------------------------------------------
 # Stats
 # ---------------------------------------------------------------------------
+
 
 class BlogStats:
     discovery_method: str | None
@@ -514,6 +507,7 @@ def _parse_loose_date(s: str | None) -> datetime | None:
 # Extraction (trafilatura + handcrafted heading parse)
 # ---------------------------------------------------------------------------
 
+
 def _extract_post(
     html: str,
     *,
@@ -531,7 +525,7 @@ def _extract_post(
         favor_precision=True,
         include_comments=False,
         include_tables=False,
-        include_formatting=True,   # preserves heading markers in output
+        include_formatting=True,  # preserves heading markers in output
         output_format="markdown",
     )
     if not extracted:

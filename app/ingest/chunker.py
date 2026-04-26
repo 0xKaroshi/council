@@ -23,6 +23,7 @@ tiktoken's cl100k_base encoder is the token counter (same one Claude
 and GPT-4 use, close enough to real embedding tokenizers that the
 512-token target ends up near the 500-token sweet spot for retrieval).
 """
+
 from __future__ import annotations
 
 from typing import Any, Iterable
@@ -66,6 +67,7 @@ def _make_chunk(
 # Tweets — one chunk per thread, keyed by conversation_id
 # ---------------------------------------------------------------------------
 
+
 def chunk_tweets(items: Iterable[RawItem], mentor_slug: str) -> list[Chunk]:
     """Reassemble threads by metadata['conversation_id'] and emit one
     chunk per thread. Tweets without a conversation_id are treated as
@@ -97,6 +99,7 @@ def chunk_tweets(items: Iterable[RawItem], mentor_slug: str) -> list[Chunk]:
 # ---------------------------------------------------------------------------
 # Blog / newsletter — recursive 512-token chunks, 15% overlap
 # ---------------------------------------------------------------------------
+
 
 def _token_window(tokens: list[int], start: int, target: int) -> tuple[int, int]:
     end = min(len(tokens), start + target)
@@ -148,6 +151,7 @@ def chunk_blog(item: RawItem, mentor_slug: str) -> list[Chunk]:
 # Blog post (paragraph-aware) — for full essays from RSS / sitemap
 # ---------------------------------------------------------------------------
 
+
 def chunk_blog_paragraphs(
     item: RawItem,
     mentor_slug: str,
@@ -186,7 +190,7 @@ def chunk_blog_paragraphs(
     chunks: list[Chunk] = []
 
     current_heading: str = ""
-    current_paragraphs: list[str] = []   # texts in current chunk
+    current_paragraphs: list[str] = []  # texts in current chunk
     current_tokens: int = 0
 
     def _emit() -> None:
@@ -198,11 +202,7 @@ def chunk_blog_paragraphs(
             current_paragraphs = []
             current_tokens = 0
             return
-        prefix = (
-            f"{title} > {current_heading}: "
-            if current_heading
-            else f"{title}: "
-        )
+        prefix = f"{title} > {current_heading}: " if current_heading else f"{title}: "
         chunks.append(
             _make_chunk(
                 mentor_slug=mentor_slug,
@@ -260,6 +260,7 @@ def chunk_blog_paragraphs(
 # Podcast / transcript — 60–90s speaker-filtered windows
 # ---------------------------------------------------------------------------
 
+
 def chunk_transcript(item: RawItem, mentor_slug: str) -> list[Chunk]:
     """Expect item.metadata['segments'] to be a list of dicts with
     keys {start, end, speaker, text}. Windows span `speaker_of_interest`
@@ -274,10 +275,7 @@ def chunk_transcript(item: RawItem, mentor_slug: str) -> list[Chunk]:
     if not segments:
         return []
 
-    speaker_of_interest = (
-        item.metadata.get("speaker_of_interest")
-        or item.metadata.get("speaker")
-    )
+    speaker_of_interest = item.metadata.get("speaker_of_interest") or item.metadata.get("speaker")
     episode = item.title or "(untitled episode)"
     date = item.date
 
@@ -302,9 +300,7 @@ def chunk_transcript(item: RawItem, mentor_slug: str) -> list[Chunk]:
             return
         body = " ".join(t.strip() for t in window_texts if t.strip()).strip()
         if body:
-            text = (
-                f"From '{episode}' ({date}), {window_speaker}: {body}"
-            )
+            text = f"From '{episode}' ({date}), {window_speaker}: {body}"
             chunks.append(
                 _make_chunk(
                     mentor_slug=mentor_slug,

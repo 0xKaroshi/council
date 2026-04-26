@@ -4,6 +4,7 @@ The tool returns markdown content from a configurable directory.
 Tests cover: dynamic file discovery (anything *.md, skipping
 .example.md templates), unknown-file message, empty / missing /
 unreadable file handling, and missing-directory error message."""
+
 from __future__ import annotations
 
 import logging
@@ -28,6 +29,7 @@ def context_dir(tmp_path: Path, monkeypatch):
 def _settings_with(path: Path):
     class _Stub:
         user_context_dir = path
+
     return _Stub()
 
 
@@ -51,6 +53,7 @@ async def test_all_concatenates_files_skipping_example_templates(context_dir):
 @pytest.mark.asyncio
 async def test_single_file_by_stem(context_dir):
     from app.tools.get_user_context import get_user_context
+
     out = await get_user_context(file="brand")
     assert out == "# Brand\n\nWe ship simple things."
 
@@ -58,6 +61,7 @@ async def test_single_file_by_stem(context_dir):
 @pytest.mark.asyncio
 async def test_unknown_file_returns_helpful_message(context_dir):
     from app.tools.get_user_context import get_user_context
+
     out = await get_user_context(file="metrics")
     assert "Invalid file name" in out
     # Lists what IS available so the LLM can self-correct.
@@ -74,6 +78,7 @@ async def test_all_with_no_files_surfaces_empty_directory_hint(tmp_path: Path, m
     monkeypatch.setattr("app.tools.get_user_context.settings", _settings_with(d))
 
     from app.tools.get_user_context import get_user_context
+
     out = await get_user_context()
     assert "no user context files yet" in out
     assert ".example.md" in out

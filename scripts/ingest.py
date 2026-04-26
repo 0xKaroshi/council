@@ -12,6 +12,7 @@ Usage:
 touching the mentor DB. `--restart` ignores any cursor stored in
 the meta table and paginates from the top.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -137,10 +138,7 @@ def main(argv: list[str] | None = None) -> int:
         rc_tw = _dispatch_twitter(mentor, args)
         return rc_blog or rc_tw
 
-    print(
-        f"would ingest {args.mentor}/{args.source}, "
-        f"but that source is still a stub"
-    )
+    print(f"would ingest {args.mentor}/{args.source}, but that source is still a stub")
     return 0
 
 
@@ -176,13 +174,13 @@ def _dispatch_blog(mentor: MentorConfig, args: argparse.Namespace) -> int:
                 pairs.append((s.domain, s.rss_url))
         if not pairs and mentor.blog_url:
             from urllib.parse import urlparse
+
             d = urlparse(mentor.blog_url).netloc
             if d:
                 pairs.append((d, None))
     if not pairs:
         print(
-            f"mentor {mentor.slug!r} has no blog sources configured. "
-            "Pass --domain explicitly.",
+            f"mentor {mentor.slug!r} has no blog sources configured. Pass --domain explicitly.",
             file=sys.stderr,
         )
         return 2
@@ -239,9 +237,7 @@ async def _run_twitter(mentor: MentorConfig, args: argparse.Namespace) -> int:
     total_tokens = 0
     aborted_reason: str | None = None
 
-    cost_cap_str = (
-        "<off>" if args.max_cost_usd is None else f"${args.max_cost_usd:.2f}"
-    )
+    cost_cap_str = "<off>" if args.max_cost_usd is None else f"${args.max_cost_usd:.2f}"
     print(
         f"ingest: mentor={mentor.slug} source=twitter handle=@{handle} "
         f"since={since.isoformat()} dry_run={args.dry_run} "
@@ -269,23 +265,20 @@ async def _run_twitter(mentor: MentorConfig, args: argparse.Namespace) -> int:
 
     if args.dry_run:
         inserted = 0
-        print(
-            f"dry-run: would upsert {len(chunks)} chunks "
-            f"(skipped {mentor.slug}.db write)"
-        )
+        print(f"dry-run: would upsert {len(chunks)} chunks (skipped {mentor.slug}.db write)")
     else:
         inserted = upsert_chunks(db, chunks)
         set_meta(db, "last_ingested_at", datetime.now(timezone.utc).isoformat())
 
-    _print_summary(source.stats, chunk_count=len(chunks), inserted=inserted,
-                   total_tokens=total_tokens)
+    _print_summary(
+        source.stats, chunk_count=len(chunks), inserted=inserted, total_tokens=total_tokens
+    )
     db.close()
 
     if aborted_reason is not None:
         print(f"\nABORT: {aborted_reason}", file=sys.stderr)
         print(
-            "If this is intentional, raise --max-tweets or --max-cost-usd "
-            "and re-run.",
+            "If this is intentional, raise --max-tweets or --max-cost-usd and re-run.",
             file=sys.stderr,
         )
         return 3
@@ -315,6 +308,7 @@ def _print_summary(
 # Blog runner
 # ---------------------------------------------------------------------------
 
+
 async def _run_blog(
     mentor: MentorConfig,
     args: argparse.Namespace,
@@ -334,11 +328,7 @@ async def _run_blog(
 
     db = open_mentor_db(mentor.slug)
 
-    cost_cap_str = (
-        "<off>"
-        if args.max_cost_usd is None
-        else f"${args.max_cost_usd:.2f}"
-    )
+    cost_cap_str = "<off>" if args.max_cost_usd is None else f"${args.max_cost_usd:.2f}"
     print(
         f"ingest: mentor={mentor.slug} source=blog domain={domain} "
         f"since={since.isoformat()} dry_run={args.dry_run} "

@@ -14,6 +14,7 @@ sqlite-vec's `vec0` expects for INSERT. On read, vec0 returns the blob
 back unchanged so we never need to unpack (Step 2 retrieval uses MATCH
 against the virtual table, not raw blob comparisons).
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -32,9 +33,7 @@ def get_missing_chunks(
     """Return (chunk_id, text) for chunks not yet embedded, ordered by
     id ascending. `limit` caps the result for --limit CLI runs."""
     sql = (
-        "SELECT id, text FROM chunks "
-        "WHERE id NOT IN (SELECT rowid FROM chunks_vec) "
-        "ORDER BY id ASC"
+        "SELECT id, text FROM chunks WHERE id NOT IN (SELECT rowid FROM chunks_vec) ORDER BY id ASC"
     )
     if limit is not None:
         sql += " LIMIT ?"

@@ -13,6 +13,7 @@ The set of files is dynamic — anything ending in `.md` (and not
 Empty / missing slots are surfaced explicitly so the LLM can tell
 "context not provided yet" apart from "context unavailable."
 """
+
 from __future__ import annotations
 
 import logging
@@ -29,13 +30,13 @@ TOOL_DESCRIPTION = (
     "anything else the user has put in their user_context/ dir). "
     "Use this whenever a mentor query needs to be grounded in the "
     "user's specific situation rather than answered generically. "
-    "Pass `file` = a stem name (e.g. \"brand\") to read one file, "
-    "or omit / pass \"all\" to read every file in the directory."
+    'Pass `file` = a stem name (e.g. "brand") to read one file, '
+    'or omit / pass "all" to read every file in the directory.'
 )
 
 _MSG_INVALID_FILE = (
-    "Invalid file name. Pass either \"all\" or the stem of one of the "
-    "files in the user_context directory (e.g. \"brand\" for brand.md). "
+    'Invalid file name. Pass either "all" or the stem of one of the '
+    'files in the user_context directory (e.g. "brand" for brand.md). '
     "Files ending in .example are templates and are not loaded."
 )
 _MSG_DIR_UNAVAILABLE = (
@@ -48,9 +49,7 @@ def _list_files(directory: Path) -> list[Path]:
     """Real .md files (not .example templates), sorted by name."""
     if not directory.exists() or not directory.is_dir():
         return []
-    out = sorted(
-        p for p in directory.glob("*.md") if not p.name.endswith(".example.md")
-    )
+    out = sorted(p for p in directory.glob("*.md") if not p.name.endswith(".example.md"))
     return out
 
 
@@ -65,9 +64,7 @@ async def get_user_context(file: str | None = None) -> str:
 
     context_dir: Path = settings.user_context_dir
     if not context_dir.exists() or not context_dir.is_dir():
-        log.error(
-            "get_user_context: directory missing: %s", context_dir
-        )
+        log.error("get_user_context: directory missing: %s", context_dir)
         return _MSG_DIR_UNAVAILABLE.format(path=context_dir)
 
     files = _list_files(context_dir)
@@ -87,10 +84,7 @@ async def get_user_context(file: str | None = None) -> str:
         return "\n\n---\n\n".join(parts)
 
     if target not in available_stems:
-        return (
-            _MSG_INVALID_FILE
-            + f" Available: {sorted(available_stems) or '<none>'}."
-        )
+        return _MSG_INVALID_FILE + f" Available: {sorted(available_stems) or '<none>'}."
     return _read_one(context_dir / f"{target}.md")
 
 

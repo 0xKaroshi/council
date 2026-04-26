@@ -1,4 +1,5 @@
 """Newsletter source (generic) — stub. Phase 2, Step 1 scaffold only."""
+
 from __future__ import annotations
 
 from typing import AsyncIterator

@@ -6,6 +6,7 @@ shape. The LLM router picks `mentor_slug` from the configured set;
 the tool description enumerates which slugs are available so the
 router has explicit triggers.
 """
+
 from __future__ import annotations
 
 import logging

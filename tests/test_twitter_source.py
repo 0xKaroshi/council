@@ -5,6 +5,7 @@ constructor param (the production code path creates and owns its own
 client; tests hand in an AsyncMock). Responses are a hand-rolled
 FakeResponse class so we don't pull in respx just for three tests.
 """
+
 from __future__ import annotations
 
 from datetime import datetime, timezone
@@ -37,9 +38,7 @@ class FakeResponse:
 
 
 def _user_info_response(user_id: str = "u1") -> FakeResponse:
-    return FakeResponse(
-        payload={"data": {"id": user_id, "userName": "test_handle"}}
-    )
+    return FakeResponse(payload={"data": {"id": user_id, "userName": "test_handle"}})
 
 
 def _tweet(
@@ -106,6 +105,7 @@ def _make_source(
 # Test 1 — thread reassembly groups by conversation_id
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_thread_reassembly_groups_by_conversation_id() -> None:
     """Two conversations spread across two pages should produce two
@@ -113,20 +113,30 @@ async def test_thread_reassembly_groups_by_conversation_id() -> None:
     ordered chronologically within the thread."""
     page1 = _timeline_response(
         [
-            _tweet("101", conv="100", created="Mon Mar 04 10:00:00 +0000 2024",
-                   text="root of thread A"),
-            _tweet("201", conv="200", created="Mon Mar 04 11:00:00 +0000 2024",
-                   text="standalone B"),
+            _tweet(
+                "101", conv="100", created="Mon Mar 04 10:00:00 +0000 2024", text="root of thread A"
+            ),
+            _tweet(
+                "201", conv="200", created="Mon Mar 04 11:00:00 +0000 2024", text="standalone B"
+            ),
         ],
         has_next=True,
         next_cursor="cursor-page-2",
     )
     page2 = _timeline_response(
         [
-            _tweet("102", conv="100", created="Mon Mar 04 10:05:00 +0000 2024",
-                   text="reply 1 in thread A"),
-            _tweet("103", conv="100", created="Mon Mar 04 10:07:00 +0000 2024",
-                   text="reply 2 in thread A"),
+            _tweet(
+                "102",
+                conv="100",
+                created="Mon Mar 04 10:05:00 +0000 2024",
+                text="reply 1 in thread A",
+            ),
+            _tweet(
+                "103",
+                conv="100",
+                created="Mon Mar 04 10:07:00 +0000 2024",
+                text="reply 2 in thread A",
+            ),
         ],
         has_next=False,
         next_cursor=None,
@@ -166,6 +176,7 @@ async def test_thread_reassembly_groups_by_conversation_id() -> None:
 # ---------------------------------------------------------------------------
 # Test 2 — RawItem construction preserves metadata
 # ---------------------------------------------------------------------------
+
 
 @pytest.mark.asyncio
 async def test_raw_item_preserves_metadata_and_aggregates() -> None:
@@ -227,6 +238,7 @@ async def test_raw_item_preserves_metadata_and_aggregates() -> None:
 # Test 3 — since filter stops iteration at cutoff
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_since_cutoff_stops_pagination() -> None:
     """Timeline returns newest-first. Once the oldest tweet in a batch
@@ -234,10 +246,15 @@ async def test_since_cutoff_stops_pagination() -> None:
     and then stop — even if has_next_page is still True."""
     page1 = _timeline_response(
         [
-            _tweet("301", conv="300", created="Fri Jun 07 10:00:00 +0000 2024",
-                   text="recent and kept"),
-            _tweet("302", conv="302", created="Sat Dec 31 23:59:00 +0000 2022",
-                   text="old — below cutoff"),
+            _tweet(
+                "301", conv="300", created="Fri Jun 07 10:00:00 +0000 2024", text="recent and kept"
+            ),
+            _tweet(
+                "302",
+                conv="302",
+                created="Sat Dec 31 23:59:00 +0000 2022",
+                text="old — below cutoff",
+            ),
         ],
         has_next=True,
         next_cursor="would-not-be-fetched",
@@ -274,6 +291,7 @@ async def test_since_cutoff_stops_pagination() -> None:
 # Test 4 — pagination follows top-level has_next_page (regression)
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_pagination_follows_top_level_has_next_page() -> None:
     """Regression for the bug that capped the dry-run path at 20 tweets.
@@ -290,34 +308,44 @@ async def test_pagination_follows_top_level_has_next_page() -> None:
     # mirrored inside `data`. If the buggy code ever returns, it would
     # read None from `data.has_next_page` and stop after page 1 —
     # making client.request.call_count == 2 instead of 3.
-    page1 = FakeResponse(payload={
-        "status": "success",
-        "msg": "success",
-        "data": {
-            "pin_tweet": None,
-            "tweets": [
-                _tweet("101", conv="101",
-                       created="Mon Mar 04 10:00:00 +0000 2024",
-                       text="page 1 only"),
-            ],
-        },
-        "has_next_page": True,
-        "next_cursor": "cursor-for-page-2",
-    })
-    page2 = FakeResponse(payload={
-        "status": "success",
-        "msg": "success",
-        "data": {
-            "pin_tweet": None,
-            "tweets": [
-                _tweet("202", conv="202",
-                       created="Mon Mar 04 11:00:00 +0000 2024",
-                       text="page 2 only"),
-            ],
-        },
-        "has_next_page": False,
-        "next_cursor": None,
-    })
+    page1 = FakeResponse(
+        payload={
+            "status": "success",
+            "msg": "success",
+            "data": {
+                "pin_tweet": None,
+                "tweets": [
+                    _tweet(
+                        "101",
+                        conv="101",
+                        created="Mon Mar 04 10:00:00 +0000 2024",
+                        text="page 1 only",
+                    ),
+                ],
+            },
+            "has_next_page": True,
+            "next_cursor": "cursor-for-page-2",
+        }
+    )
+    page2 = FakeResponse(
+        payload={
+            "status": "success",
+            "msg": "success",
+            "data": {
+                "pin_tweet": None,
+                "tweets": [
+                    _tweet(
+                        "202",
+                        conv="202",
+                        created="Mon Mar 04 11:00:00 +0000 2024",
+                        text="page 2 only",
+                    ),
+                ],
+            },
+            "has_next_page": False,
+            "next_cursor": None,
+        }
+    )
 
     client = AsyncMock()
     client.request.side_effect = [
@@ -347,6 +375,7 @@ async def test_pagination_follows_top_level_has_next_page() -> None:
 # Test 5 — reply filter keeps originals + self-replies, drops chatter
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_reply_filter_keeps_originals_and_self_replies() -> None:
     """`includeReplies=true` floods the response with one-line replies
@@ -359,19 +388,22 @@ async def test_reply_filter_keeps_originals_and_self_replies() -> None:
     own_user_id = "u1"  # _user_info_response defaults to user_id="u1"
 
     original = _tweet(
-        "100", conv="100",
+        "100",
+        conv="100",
         created="Mon Mar 04 10:00:00 +0000 2024",
         text="original tweet",
     )
     self_reply = _tweet(
-        "101", conv="100",
+        "101",
+        conv="100",
         created="Mon Mar 04 10:05:00 +0000 2024",
         text="self-reply continuing the thread",
         is_reply=True,
         in_reply_to_user_id=own_user_id,
     )
     other_reply = _tweet(
-        "102", conv="999",
+        "102",
+        conv="999",
         created="Mon Mar 04 10:10:00 +0000 2024",
         text="reply to someone else's tweet",
         is_reply=True,
@@ -406,6 +438,7 @@ async def test_reply_filter_keeps_originals_and_self_replies() -> None:
 # Test 6 — budget cap flushes accumulated threads before re-raising
 # ---------------------------------------------------------------------------
 
+
 @pytest.mark.asyncio
 async def test_budget_cap_flushes_accumulated_threads_before_reraising() -> None:
     """When --max-tweets (or --max-cost-usd) trips mid-stream, the
@@ -420,30 +453,24 @@ async def test_budget_cap_flushes_accumulated_threads_before_reraising() -> None
     """
     b1 = _timeline_response(
         [
-            _tweet("1a", conv="a",
-                   created="Mon Mar 04 10:00:00 +0000 2024", text="a1"),
-            _tweet("1b", conv="b",
-                   created="Mon Mar 04 10:00:01 +0000 2024", text="b1"),
+            _tweet("1a", conv="a", created="Mon Mar 04 10:00:00 +0000 2024", text="a1"),
+            _tweet("1b", conv="b", created="Mon Mar 04 10:00:01 +0000 2024", text="b1"),
         ],
         has_next=True,
         next_cursor="c2",
     )
     b2 = _timeline_response(
         [
-            _tweet("2a", conv="a",
-                   created="Mon Mar 04 10:01:00 +0000 2024", text="a2"),
-            _tweet("2b", conv="b",
-                   created="Mon Mar 04 10:01:01 +0000 2024", text="b2"),
+            _tweet("2a", conv="a", created="Mon Mar 04 10:01:00 +0000 2024", text="a2"),
+            _tweet("2b", conv="b", created="Mon Mar 04 10:01:01 +0000 2024", text="b2"),
         ],
         has_next=True,
         next_cursor="c3",
     )
     b3 = _timeline_response(
         [
-            _tweet("3a", conv="a",
-                   created="Mon Mar 04 10:02:00 +0000 2024", text="a3"),
-            _tweet("3b", conv="b",
-                   created="Mon Mar 04 10:02:01 +0000 2024", text="b3"),
+            _tweet("3a", conv="a", created="Mon Mar 04 10:02:00 +0000 2024", text="a3"),
+            _tweet("3b", conv="b", created="Mon Mar 04 10:02:01 +0000 2024", text="b3"),
         ],
         has_next=True,
         next_cursor="should-not-be-fetched",
@@ -452,7 +479,9 @@ async def test_budget_cap_flushes_accumulated_threads_before_reraising() -> None
     client = AsyncMock()
     client.request.side_effect = [
         _user_info_response(),
-        b1, b2, b3,
+        b1,
+        b2,
+        b3,
         # No 4th timeline response wired; if the cap fails to trip and
         # a 4th request is made, AsyncMock's default object has no
         # working .json() and the test blows up loudly.

@@ -8,6 +8,7 @@ Distance metric is the vec0 default (L2). text-embedding-3-small
 emits unit-length vectors, so L2 ordering is monotonically equivalent
 to cosine ordering — same ranking, different scalar values.
 """
+
 from __future__ import annotations
 
 import sqlite3

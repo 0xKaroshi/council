@@ -17,6 +17,7 @@ is loaded at connection time; `open_mentor_db` calls
 ones (carried over from a previous ingest run) pick up the
 virtual table lazily.
 """
+
 from __future__ import annotations
 
 import sqlite3
@@ -92,6 +93,7 @@ def _bundled_db_path(slug: str) -> Path | None:
     """
     try:
         from importlib.resources import files
+
         try:
             traversable = files(f"examples.{slug}").joinpath(f"{slug}.db")
             if traversable.is_file():
@@ -153,9 +155,7 @@ def resolve_mentor_db_path(slug: str, *, fallback_to_bundled: bool = False) -> t
     return user_path, "missing" if not user_path.exists() else "user"
 
 
-def open_mentor_db(
-    slug: str, *, fallback_to_bundled: bool = False
-) -> sqlite3.Connection:
+def open_mentor_db(slug: str, *, fallback_to_bundled: bool = False) -> sqlite3.Connection:
     """Open (and lazily create) the SQLite DB for a mentor slug.
 
     `fallback_to_bundled=True` makes read-mode callers transparently
@@ -182,6 +182,7 @@ def open_mentor_db(
 # Migrations — idempotent, run on every open
 # ---------------------------------------------------------------------------
 
+
 def _migrate_chunks_source_priority(conn: sqlite3.Connection) -> None:
     """Add `chunks.source_priority` to pre-existing DBs that were built
     before the column was introduced. 1=tweet, 2=podcast, 3=canonical
@@ -189,9 +190,7 @@ def _migrate_chunks_source_priority(conn: sqlite3.Connection) -> None:
     cols = {row["name"] for row in conn.execute("PRAGMA table_info(chunks)")}
     if "source_priority" in cols:
         return
-    conn.execute(
-        "ALTER TABLE chunks ADD COLUMN source_priority INTEGER NOT NULL DEFAULT 1"
-    )
+    conn.execute("ALTER TABLE chunks ADD COLUMN source_priority INTEGER NOT NULL DEFAULT 1")
 
 
 def init_vector_tables(conn: sqlite3.Connection) -> None:
@@ -201,14 +200,11 @@ def init_vector_tables(conn: sqlite3.Connection) -> None:
     happen per-connection (sqlite-vec registers virtual tables on a
     connection-local namespace)."""
     import sqlite_vec  # imported lazily so tests that don't exercise
-                       # vector storage aren't forced to install it
+    # vector storage aren't forced to install it
 
     conn.enable_load_extension(True)
     sqlite_vec.load(conn)
-    conn.execute(
-        "CREATE VIRTUAL TABLE IF NOT EXISTS chunks_vec "
-        "USING vec0(embedding float[1536])"
-    )
+    conn.execute("CREATE VIRTUAL TABLE IF NOT EXISTS chunks_vec USING vec0(embedding float[1536])")
 
 
 def upsert_chunks(conn: sqlite3.Connection, chunks: list[Chunk]) -> int:

@@ -14,6 +14,7 @@ Cost: `text-embedding-3-small` is billed at $0.02 per 1M input tokens
 (April 2026 pricing). The stats block surfaces the running total so
 the CLI can show it in per-batch and final summary lines.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -110,10 +111,13 @@ class OpenAIEmbedder:
                 last_exc = e
                 if attempt >= self.max_retries:
                     raise
-                delay = min(30.0, 2 ** attempt)
+                delay = min(30.0, 2**attempt)
                 log.warning(
                     "embed: %s on attempt %d/%d; retrying in %.1fs",
-                    type(e).__name__, attempt + 1, self.max_retries, delay,
+                    type(e).__name__,
+                    attempt + 1,
+                    self.max_retries,
+                    delay,
                 )
                 await asyncio.sleep(delay)
         assert last_exc is not None
@@ -138,12 +142,14 @@ def _truncate_to_token_limit(text: str, max_tokens: int = _MAX_INPUT_TOKENS) -> 
     global _TRUNCATION_ENC
     if _TRUNCATION_ENC is None:
         import tiktoken
+
         _TRUNCATION_ENC = tiktoken.get_encoding("cl100k_base")
     tokens = _TRUNCATION_ENC.encode(text)
     if len(tokens) <= max_tokens:
         return text
     log.warning(
         "embed: truncating oversized chunk from %d → %d tokens",
-        len(tokens), max_tokens,
+        len(tokens),
+        max_tokens,
     )
     return _TRUNCATION_ENC.decode(tokens[:max_tokens])

@@ -17,6 +17,7 @@ by up to 10% before truncation to top-k.
 
 Nothing here registers as an MCP tool — that is Phase 3 Step 3.
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -37,10 +38,10 @@ class Snippet:
     text: str
     source_url: str
     source_type: str
-    date: str                 # ISO 8601
-    score: float              # RRF score (post recency / priority boost if applied)
-    bm25_rank: int | None     # rank in BM25 top-50, None if absent
-    vec_rank: int | None      # rank in vector top-50, None if absent
+    date: str  # ISO 8601
+    score: float  # RRF score (post recency / priority boost if applied)
+    bm25_rank: int | None  # rank in BM25 top-50, None if absent
+    vec_rank: int | None  # rank in vector top-50, None if absent
     source_priority: int = 1  # 1=tweet, 2=podcast, 3=canonical essay
 
 
@@ -99,6 +100,7 @@ async def retrieve(
     # read-only by design.
     db = open_mentor_db(mentor_slug, fallback_to_bundled=True)
     try:
+
         async def _bm25_branch() -> tuple[list[tuple[int, float]], float]:
             t = time.monotonic()
             r = search_bm25(db, normalized, limit=_BM25_LIMIT)
@@ -154,6 +156,7 @@ async def retrieve(
 # ---------------------------------------------------------------------------
 # Internals
 # ---------------------------------------------------------------------------
+
 
 def _hydrate_snippets(
     conn: sqlite3.Connection,

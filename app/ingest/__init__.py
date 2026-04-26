@@ -4,6 +4,7 @@ Phase 2, Step 1 — scaffold only. Dataclasses that move data between
 stages live here so sources, chunker, dedupe, and db can import from
 a single neutral location without pulling in each other.
 """
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
@@ -20,10 +21,10 @@ class RawItem:
     each strategy reads the keys it knows about.
     """
 
-    source_type: str          # "twitter" | "substack" | "newsletter" | "blog" | "youtube"
+    source_type: str  # "twitter" | "substack" | "newsletter" | "blog" | "youtube"
     source_url: str
-    date: str                 # ISO-8601 date or datetime string
-    title: str | None         # None for sources that have no title (e.g. tweets)
+    date: str  # ISO-8601 date or datetime string
+    title: str | None  # None for sources that have no title (e.g. tweets)
     body: str
     metadata: dict[str, Any] = field(default_factory=dict)
 
